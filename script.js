@@ -123,9 +123,8 @@ seat.addEventListener("click", (e) => {
 
 // Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
-  const svg = document.getElementById("floorplan-svg"); // or however you load the SVG
+  const svg = document.getElementById("floorplan-svg");
 
-  // If SVG is embedded with <object> tag:
   if (svg && svg.contentDocument) {
     svg.addEventListener("load", () => {
       const svgDoc = svg.contentDocument;
@@ -134,17 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const seat = svgDoc.getElementById(id);
         if (seat) {
           seat.classList.add(data.status);
+          seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
 
-          const tooltipText = `${data.name}${data.title ? " – " + data.title : ""} (Seat ${id.replace("seat-", "")})`;
-          seat.dataset.tooltip = tooltipText;
-          seat.setAttribute("title", tooltipText);
-
-          const seatNumber = id.replace("seat-", "");
-          const role = data.title ? ` (${data.title})` : "";
-          const labelText = `#${seatNumber}${role} - ${data.name}`;
-
+          // Create and add seat number label
           const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          text.textContent = labelText;
+          text.textContent = id.replace("seat-", "");
 
           const x = parseFloat(seat.getAttribute("x"));
           const y = parseFloat(seat.getAttribute("y"));
@@ -156,8 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
           svgDoc.documentElement.appendChild(text);
         }
       });
+    });
   } else {
-    // SVG inline in HTML or no <object>, just init normally
-    initSeats();
+    initSeats(); // for inline SVG fallback
   }
 });
