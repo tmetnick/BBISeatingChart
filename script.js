@@ -64,8 +64,8 @@ let selectedSeatId = null;
 
 // Helper: position tooltip near mouse
 function moveTooltip(x, y) {
-  tooltip.style.left = x + 15 + "px";
-  tooltip.style.top = y + 15 + "px";
+  tooltip.style.left = x + 5 + "px";
+  tooltip.style.top = y + 5 + "px";
 }
 
 // Initialize seats on SVG load or page load
