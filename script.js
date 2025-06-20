@@ -132,11 +132,29 @@ document.addEventListener("DOMContentLoaded", () => {
       Object.entries(seatData).forEach(([id, data]) => {
         const seat = svgDoc.getElementById(id);
         if (seat) {
-          seat.classList.add(data.status); // used, available, reserved
-          seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+          seat.classList.add(data.status);
+
+          const tooltipText = `${data.name}${data.title ? " – " + data.title : ""} (Seat ${id.replace("seat-", "")})`;
+          seat.dataset.tooltip = tooltipText;
+          seat.setAttribute("title", tooltipText);
+
+          const seatNumber = id.replace("seat-", "");
+          const role = data.title ? ` (${data.title})` : "";
+          const labelText = `#${seatNumber}${role} - ${data.name}`;
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.textContent = labelText;
+
+          const x = parseFloat(seat.getAttribute("x"));
+          const y = parseFloat(seat.getAttribute("y"));
+
+          text.setAttribute("x", x + 5);
+          text.setAttribute("y", y + 12);
+          text.setAttribute("class", "seat-label");
+
+          svgDoc.documentElement.appendChild(text);
         }
       });
-    });
   } else {
     // SVG inline in HTML or no <object>, just init normally
     initSeats();
