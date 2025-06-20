@@ -81,7 +81,8 @@ function initSeats() {
     seat.classList.add(data.status);
 
     // Set tooltip title (used by JS, not native title attr)
-    seat.dataset.tooltip = `${data.name}${data.title ? " - " + data.title : ""}`;
+    const seatNumber = id.replace("seat-", "");
+    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
 
     // Mouse enter: show tooltip
     seat.addEventListener("mouseenter", (e) => {
