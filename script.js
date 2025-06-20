@@ -101,7 +101,6 @@ function initSeats() {
     });
 
     // Click: toggle selected seat highlight
-seat.addEventListener("click", (e) => {
     seat.addEventListener("click", () => {
       if (selectedSeatId && selectedSeatId !== id) {
         // Remove highlight from previously selected seatAdd commentMore actions
