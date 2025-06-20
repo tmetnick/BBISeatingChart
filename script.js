@@ -70,7 +70,7 @@ function moveTooltip(x, y) {
 
 // Initialize seats on SVG load or page load
 function initSeats() {
-  Object.entries(seatAssignments).forEach(([id, data]) => {
+  Object.entries(seatData).forEach(([id, data]) => {
     const seat = document.getElementById(id);
     if (!seat) return;
 
@@ -137,8 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
-  }
-});
   } else {
     // SVG inline in HTML or no <object>, just init normally
     initSeats();
