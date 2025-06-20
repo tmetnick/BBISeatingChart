@@ -33,7 +33,7 @@ const seatData = {
   "seat-84": { name: "William Russell", title: "", status: "used" },
   "seat-85": { name: "Joshua Reyes", title: "", status: "used" },
   "seat-88": { name: "Steven Sargeant", title: "", status: "used" },
-  "seat-99": { name: "Alison O'Brien", title: "", status: "used" },
+  "seat-99": { name: "Alison O'Brien", title: "HR Specialist", status: "used" },
   "seat-100": { name: "Samantha Bensch", title: "", status: "used" },
   "seat-101": { name: "Anna Hopkins", title: "", status: "used" },
   "seat-103": { name: "", title: "", status: "available" },
