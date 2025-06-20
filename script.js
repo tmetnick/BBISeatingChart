@@ -102,30 +102,24 @@ function initSeats() {
 
     // Click: toggle selected seat highlight
 seat.addEventListener("click", (e) => {
-  if (selectedSeatId && selectedSeatId !== id) {
-    const prev = document.getElementById(selectedSeatId);
-    if (prev) prev.classList.remove("selected");
-  }
+    seat.addEventListener("click", () => {
+      if (selectedSeatId && selectedSeatId !== id) {
+        // Remove highlight from previously selected seatAdd commentMore actions
+        const prev = document.getElementById(selectedSeatId);
+        if (prev) prev.classList.remove("selected");
+      }
 
-  if (selectedSeatId === id) {
-    seat.classList.remove("selected");
-    selectedSeatId = null;
-    tooltip.style.opacity = "0"; // hide tooltip on deselect
-  } else {
-    seat.classList.add("selected");
-    selectedSeatId = id;
-
-    // Show tooltip with seat number, name, and role
-    const seatNumber = id.replace("seat-", "");
-    const data = seatData[id];
-    const tooltipText = `${seatNumber} - ${data.name}${data.title ? " - " + data.title : ""}`;
-    tooltip.textContent = tooltipText;
-    tooltip.style.opacity = "1";
-
-    // Position tooltip near clicked seat
-    moveTooltip(e.pageX, e.pageY);
-  }
-});
+      if (selectedSeatId === id) {
+        // Deselect seat
+        seat.classList.remove("selected");
+        selectedSeatId = null;
+      } else {
+        seat.classList.add("selected");
+        selectedSeatId = id;
+      }
+    });
+  });
+}
 
 // Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
