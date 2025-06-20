@@ -1,6 +1,6 @@
 // Example seat data - replace with your real data or fetch from JSON
 const seatData = {
-   "seat-6": { name: "Daniel Morrison", title: "", status: "used" },
+  "seat-6": { name: "Daniel Morrison", title: "", status: "used" },
   "seat-7": { name: "Katie Hug", title: "", status: "used" },
   "seat-8": { name: "Jason Goetluck", title: "", status: "used" },
   "seat-9": { name: "Frankie Wren", title: "", status: "used" },
@@ -122,19 +122,23 @@ function initSeats() {
 
 // Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
-  // If your SVG is embedded via <object>, wait for it to load
-  const obj = document.getElementById("floorplan-svg");
-  if (obj) {
-    obj.addEventListener("load", () => {
-      // Access the SVG document inside <object>
-      const svgDoc = obj.contentDocument;
-      if (!svgDoc) return;
+  const svg = document.getElementById("floorplan-svg"); // or however you load the SVG
 
-      // Override getElementById to look inside SVG doc
-      window.getElementById = (id) => svgDoc.getElementById(id);
+  // If SVG is embedded with <object> tag:
+  if (svg && svg.contentDocument) {
+    svg.addEventListener("load", () => {
+      const svgDoc = svg.contentDocument;
 
-      initSeats();
+      Object.entries(seatData).forEach(([id, data]) => {
+        const seat = svgDoc.getElementById(id);
+        if (seat) {
+          seat.classList.add(data.status); // used, available, reserved
+          seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+        }
+      });
     });
+  }
+});
   } else {
     // SVG inline in HTML or no <object>, just init normally
     initSeats();
