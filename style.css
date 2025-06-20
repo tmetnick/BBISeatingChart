@@ -44,13 +44,13 @@ h1 {
 
 /* Seat Status Colors */
 .seat.available {
-  fill: #4caf50; /* Green */
+  fill: #4caf50 !important; /* Green */
 }
 .seat.used {
-  fill: #f44336; /* Red */
+  fill: #f44336 !important; /* Red */
 }
 .seat.reserved {
-  fill: #ffeb3b; /* Yellow */
+  fill: #ffeb3b !important;  /* Yellow */
 }
 
 /* Tooltip Styling */
