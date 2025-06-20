@@ -123,6 +123,18 @@ function initSeats() {
     });
   });
 }
+// Toggle Admin/User Mode
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("toggle-mode");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("admin-mode");
+      toggleBtn.textContent = document.body.classList.contains("admin-mode")
+        ? "Switch to User Mode"
+        : "Switch to Admin Mode";
+    });
+  }
+});
 
 // Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
