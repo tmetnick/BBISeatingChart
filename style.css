@@ -52,6 +52,14 @@ h1 {
 .seat.reserved {
   fill: #ffeb3b !important;  /* Yellow */
 }
+/* Seat number label style */
+.seat-label {
+  font-size: 10px;
+  fill: black;
+  pointer-events: none;  /* so text doesn't block mouse events on seats */
+  user-select: none;     /* prevents user from selecting the text */
+  font-family: Arial, sans-serif;
+}
 
 /* Tooltip Styling */
 .tooltip {
