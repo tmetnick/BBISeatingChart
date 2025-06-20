@@ -57,10 +57,21 @@
       opacity: 0;
       transition: opacity 0.2s ease;
     }
-  </style>
+</style>
 </head>
 <body>
 
+  <h1>Company Seating Chart</h1>
+
+  <!-- Admin/User Mode Toggle -->
+  <button id="toggle-mode">Switch to Admin Mode</button>
+
+  <!-- Legend / Key for Seat Status -->
+  <div class="legend" style="margin: 10px 0; display: flex; gap: 15px;">
+    <div><span style="display: inline-block; width: 16px; height: 16px; background: #4caf50; margin-right: 5px;"></span>Available</div>
+    <div><span style="display: inline-block; width: 16px; height: 16px; background: #f44336; margin-right: 5px;"></span>Used</div>
+    <div><span style="display: inline-block; width: 16px; height: 16px; background: #ffeb3b; margin-right: 5px; border: 1px solid #aaa;"></span>Reserved</div>
+  </div>
   <h1>Company Seating Chart</h1>
 
   <div class="chart-container" id="chart-container">
