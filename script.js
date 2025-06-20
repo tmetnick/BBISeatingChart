@@ -41,6 +41,7 @@ const seatData = {
   "seat-104": { name: "Teagan Metnick", title: "IT Support Intern", status: "used" },
   "seat-105": { name: "Katie Nichter", title: "HR Intern", status: "used" },
   "seat-106": { name: "Available", title: "", status: "available" },
+  "seat-107": { name: "Available", title: "", status: "available" },
   "seat-108": { name: "Willie Dunham", title: "", status: "used" },
   "seat-109": { name: "Nate Wood", title: "", status: "used" },
   "seat-110": { name: "Colin Julian", title: "", status: "used" },
