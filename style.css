@@ -1,0 +1,69 @@
+/* Reset & Base Styles */
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f8ff;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+}
+
+/* Header */
+h1 {
+  color: #1e4e79;
+  margin-bottom: 15px;
+}
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  width: 800px;  /* Adjust this to your SVG's width */
+  max-width: 100%;
+}
+
+/* SVG should fill container */
+.chart-container svg,
+.chart-container object {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Seat Styles (applied to seat elements inside SVG) */
+.seat {
+  cursor: pointer;
+  transition: fill 0.3s ease;
+  stroke: #333;
+  stroke-width: 1;
+}
+
+/* Seat Status Colors */
+.seat.available {
+  fill: #4caf50; /* Green */
+}
+.seat.used {
+  fill: #f44336; /* Red */
+}
+.seat.reserved {
+  fill: #ffeb3b; /* Yellow */
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: absolute;
+  padding: 6px 10px;
+  background-color: rgba(0,0,0,0.75);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  z-index: 10;
+}
