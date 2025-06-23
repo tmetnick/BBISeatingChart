@@ -1,5 +1,3 @@
-with open("/mnt/data/updated_script.js", "w") as f:
-    f.write("""// Example seat data - replace with your real data or fetch from JSON
 const seatData = {
   "seat-6": { name: "Daniel Morrison", title: "", status: "used" },
   "seat-7": { name: "Katie Hug", title: "", status: "used" },
