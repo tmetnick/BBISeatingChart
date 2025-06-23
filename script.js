@@ -192,62 +192,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   const svg = document.getElementById("floorplan-svg");
-if (svg && svg.contentDocument) {
-  svg.addEventListener("load", () => {
-    const svgDoc = svg.contentDocument;
 
-    Object.entries(seatData).forEach(([id, data]) => {
-      const seat = svgDoc.getElementById(id);
-      if (!seat) return;
+  // For <object> SVG
+  if (svg && svg.tagName.toLowerCase() === "object") {
+    svg.addEventListener("load", () => {
+      const svgDoc = svg.contentDocument;
 
-      seat.classList.add("seat", data.status);
-      seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+      Object.entries(seatData).forEach(([id, data]) => {
+        const seat = svgDoc.getElementById(id);
+        if (!seat) return;
 
-      const seatNumber = id.replace("seat-", "");
+        seat.classList.add("seat", data.status);
+        seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
 
-      // Add label
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      const x = parseFloat(seat.getAttribute("x"));
-      const y = parseFloat(seat.getAttribute("y"));
-      text.textContent = seatNumber;
-      text.setAttribute("x", x + 5);
-      text.setAttribute("y", y + 12);
-      text.setAttribute("class", "seat-label");
-      svgDoc.documentElement.appendChild(text);
+        const seatNumber = id.replace("seat-", "");
 
-      // Click event
-      seat.addEventListener("click", () => {
-        if (isAdminMode()) {
-          seat.classList.remove("available", "used", "reserved");
-          if (data.status === "available") {
-            data.status = "used";
-          } else if (data.status === "used") {
-            data.status = "reserved";
+        // Add label
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const x = parseFloat(seat.getAttribute("x"));
+        const y = parseFloat(seat.getAttribute("y"));
+        text.textContent = seatNumber;
+        text.setAttribute("x", x + 5);
+        text.setAttribute("y", y + 12);
+        text.setAttribute("class", "seat-label");
+        svgDoc.documentElement.appendChild(text);
+
+        // Add click logic
+        seat.addEventListener("click", () => {
+          if (isAdminMode()) {
+            seat.classList.remove("available", "used", "reserved");
+            if (data.status === "available") {
+              data.status = "used";
+            } else if (data.status === "used") {
+              data.status = "reserved";
+            } else {
+              data.status = "available";
+            }
+            seat.classList.add(data.status);
+            seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
           } else {
-            data.status = "available";
-          }
-          seat.classList.add(data.status);
-          seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
-        } else {
-          // User mode select
-          if (selectedSeatId && selectedSeatId !== id) {
-            const prev = svgDoc.getElementById(selectedSeatId);
-            if (prev) prev.classList.remove("selected");
-          }
+            if (selectedSeatId && selectedSeatId !== id) {
+              const prev = svgDoc.getElementById(selectedSeatId);
+              if (prev) prev.classList.remove("selected");
+            }
 
-          if (selectedSeatId === id) {
-            seat.classList.remove("selected");
-            selectedSeatId = null;
-          } else {
-            seat.classList.add("selected");
-            selectedSeatId = id;
+            if (selectedSeatId === id) {
+              seat.classList.remove("selected");
+              selectedSeatId = null;
+            } else {
+              seat.classList.add("selected");
+              selectedSeatId = id;
+            }
           }
-        }
+        });
       });
     });
-  });
-}
+  } else {
+    // For inline SVG fallback
+    initSeats();
+  }
 });
