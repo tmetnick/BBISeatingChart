@@ -91,7 +91,7 @@ button#toggle-mode {
   font-size: 14px;
 }
 .logo-banner {
-  background-image: url('639be2f8-c944-46f4-bdbb-1fd5330f9b22.png'); /* Change to actual logo filename if renamed in repo */
+  background-image: url('logo.png'); /* Change to actual logo filename if renamed in repo */
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
