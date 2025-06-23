@@ -199,6 +199,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (svg && svg.tagName.toLowerCase() === "object") {
     svg.addEventListener("load", () => {
       const svgDoc = svg.contentDocument;
+      const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+style.textContent = `
+  .used { fill: #ff4d4f; }
+  .available { fill: #4caf50; }
+  .reserved { fill: #ffcc00; }
+  .selected { stroke: #0000ff; stroke-width: 2; }
+  .seat-label { font-size: 10px; fill: black; pointer-events: none; }
+`;
+svgDoc.documentElement.appendChild(style);
 
       Object.entries(seatData).forEach(([id, data]) => {
         const seat = svgDoc.getElementById(id);
