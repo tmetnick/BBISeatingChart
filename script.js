@@ -34,7 +34,6 @@ const seatData = {
   "seat-37": { name: "Austin Evans", title: "", status: "used" },
   "seat-38": { name: "Eric Lowe", title: "", status: "used" },
   "seat-39": { name: "Jake Cadotte", title: "", status: "used" },
-  
   "seat-52": { name: "Richard Wilson", title: "", status: "used" },
   "seat-62": { name: "Jesse Halpern", title: "", status: "used" },
   "seat-68": { name: "Brian Keifer", title: "", status: "used" },
