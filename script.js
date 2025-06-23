@@ -1,4 +1,5 @@
-// Example seat data - replace with your real data or fetch from JSON
+with open("/mnt/data/updated_script.js", "w") as f:
+    f.write("""// Example seat data - replace with your real data or fetch from JSON
 const seatData = {
   "seat-6": { name: "Daniel Morrison", title: "", status: "used" },
   "seat-7": { name: "Katie Hug", title: "", status: "used" },
@@ -101,6 +102,7 @@ const seatData = {
 
   // add more seats here...
 };
+};
 
 const tooltip = document.getElementById("tooltip");
 let selectedSeatId = null;
@@ -109,77 +111,70 @@ function isAdminMode() {
   return document.body.classList.contains('admin-mode');
 }
 
-// Helper: position tooltip near mouse
 function moveTooltip(x, y) {
   tooltip.style.left = x + 5 + "px";
   tooltip.style.top = y + 5 + "px";
 }
 
-// Initialize seats on SVG load or page load
 function initSeats() {
   Object.entries(seatData).forEach(([id, data]) => {
     const seat = document.getElementById(id);
     if (!seat) return;
 
-    // Add base class
     seat.classList.add("seat");
-
-    // Add status class
     seat.classList.add(data.status);
 
-    // Set tooltip title (used by JS, not native title attr)
     const seatNumber = id.replace("seat-", "");
     seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
 
-    // Mouse enter: show tooltip
     seat.addEventListener("mouseenter", (e) => {
       tooltip.textContent = seat.dataset.tooltip;
       tooltip.style.opacity = "1";
       moveTooltip(e.pageX, e.pageY);
     });
 
-    // Mouse move: update tooltip position
     seat.addEventListener("mousemove", (e) => {
       moveTooltip(e.pageX, e.pageY);
     });
 
-    // Mouse leave: hide tooltip
     seat.addEventListener("mouseleave", () => {
       tooltip.style.opacity = "0";
     });
 
-seat.addEventListener("click", () => {
-  if (isAdminMode()) {
-    // Cycle status in admin mode
-    seat.classList.remove("available", "used", "reserved"); // Clear all
-    if (data.status === "available") {
-      data.status = "used";
-    } else if (data.status === "used") {
-      data.status = "reserved";
-    } else {
-      data.status = "available";
-    }
-    seat.classList.add(data.status);
-    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
-  } else {
-    // Regular select/deselect logic
-    if (selectedSeatId && selectedSeatId !== id) {
-      const prev = document.getElementById(selectedSeatId);
-      if (prev) prev.classList.remove("selected");
-    }
+    seat.addEventListener("click", () => {
+      if (isAdminMode()) {
+        seat.classList.remove("available", "used", "reserved");
+        if (data.status === "available") {
+          data.status = "used";
+        } else if (data.status === "used") {
+          data.status = "reserved";
+        } else {
+          data.status = "available";
+        }
+        seat.classList.add(data.status);
+        seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
+      } else {
+        if (selectedSeatId && selectedSeatId !== id) {
+          const prev = document.getElementById(selectedSeatId);
+          if (prev) prev.classList.remove("selected");
+        }
 
-    if (selectedSeatId === id) {
-      seat.classList.remove("selected");
-      selectedSeatId = null;
-    } else {
-      seat.classList.add("selected");
-      selectedSeatId = id;
-    }
-  }
-});
+        if (selectedSeatId === id) {
+          seat.classList.remove("selected");
+          selectedSeatId = null;
+        } else {
+          seat.classList.add("selected");
+          selectedSeatId = id;
+        }
+
+        document.getElementById("seat-info").textContent = selectedSeatId
+          ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
+          : "";
+      }
+    });
   });
 }
-// Toggle Admin/User Mode
+
 document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-mode");
   if (toggleBtn) {
@@ -190,35 +185,39 @@ document.addEventListener("DOMContentLoaded", () => {
         : "Switch to Admin Mode";
     });
   }
-});
 
-document.addEventListener("DOMContentLoaded", () => {
+  const exportBtn = document.getElementById("export-data");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      console.log(JSON.stringify(seatData, null, 2));
+      alert("Check the console for updated seat data.");
+    });
+  }
+
   const svg = document.getElementById("floorplan-svg");
 
-  // For <object> SVG
   if (svg && svg.tagName.toLowerCase() === "object") {
     svg.addEventListener("load", () => {
       const svgDoc = svg.contentDocument;
       const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-style.textContent = `
-  .used { fill: #ff4d4f; }
-  .available { fill: #4caf50; }
-  .reserved { fill: #ffcc00; }
-  .selected { stroke: #0000ff; stroke-width: 2; }
-  .seat-label { font-size: 10px; fill: black; pointer-events: none; }
-`;
-svgDoc.documentElement.appendChild(style);
+      style.textContent = \`
+        .used { fill: #ff4d4f; }
+        .available { fill: #4caf50; }
+        .reserved { fill: #ffcc00; }
+        .selected { stroke: #0000ff; stroke-width: 2; }
+        .seat-label { font-size: 10px; fill: black; pointer-events: none; }
+      \`;
+      svgDoc.documentElement.appendChild(style);
 
       Object.entries(seatData).forEach(([id, data]) => {
         const seat = svgDoc.getElementById(id);
         if (!seat) return;
 
         seat.classList.add("seat", data.status);
-        seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+        seat.setAttribute("title", \`\${data.name}\${data.title ? " – " + data.title : ""}\`);
 
         const seatNumber = id.replace("seat-", "");
 
-        // Add label
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const x = parseFloat(seat.getAttribute("x"));
         const y = parseFloat(seat.getAttribute("y"));
@@ -228,7 +227,6 @@ svgDoc.documentElement.appendChild(style);
         text.setAttribute("class", "seat-label");
         svgDoc.documentElement.appendChild(text);
 
-        // Add click logic
         seat.addEventListener("click", () => {
           if (isAdminMode()) {
             seat.classList.remove("available", "used", "reserved");
@@ -240,7 +238,7 @@ svgDoc.documentElement.appendChild(style);
               data.status = "available";
             }
             seat.classList.add(data.status);
-            seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+            seat.setAttribute("title", \`\${data.name}\${data.title ? " – " + data.title : ""}\`);
           } else {
             if (selectedSeatId && selectedSeatId !== id) {
               const prev = svgDoc.getElementById(selectedSeatId);
@@ -254,12 +252,16 @@ svgDoc.documentElement.appendChild(style);
               seat.classList.add("selected");
               selectedSeatId = id;
             }
+
+            document.getElementById("seat-info").textContent = selectedSeatId
+              ? \`Selected: \${seatData[id].name} \${seatData[id].title ? \`(\${seatData[id].title})\` : ''}\`
+              : "";
           }
         });
       });
     });
   } else {
-    // For inline SVG fallback
     initSeats();
   }
 });
+""")
