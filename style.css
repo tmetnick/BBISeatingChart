@@ -52,12 +52,25 @@ h1 {
 .seat.reserved {
   fill: #ffeb3b !important;  /* Yellow */
 }
+
+/* NEW: Selected seat style for user mode */
+.seat.selected {
+  stroke: #0000ff;
+  stroke-width: 2.5;
+}
+
+/* NEW: Hover effect for interactivity */
+.seat:hover {
+  opacity: 0.8;
+  filter: brightness(1.1);
+}
+
 /* Seat number label style */
 .seat-label {
   font-size: 10px;
   fill: black;
-  pointer-events: none;  /* so text doesn't block mouse events on seats */
-  user-select: none;     /* prevents user from selecting the text */
+  pointer-events: none;
+  user-select: none;
   font-family: Arial, sans-serif;
 }
 
@@ -75,9 +88,10 @@ h1 {
   white-space: nowrap;
   z-index: 10;
 }
+
 /* Admin Mode Styles */
 body.admin-mode {
-  background-color: #e6f4ff; /* Light blue background for admin mode */
+  background-color: #e6f4ff;
 }
 
 button#toggle-mode {
@@ -90,8 +104,10 @@ button#toggle-mode {
   cursor: pointer;
   font-size: 14px;
 }
+
+/* Logo Banner */
 .logo-banner {
-  background-image: url('logo.png'); /* Change to actual logo filename if renamed in repo */
+  background-image: url('logo.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
