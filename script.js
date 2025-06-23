@@ -105,6 +105,10 @@ const seatData = {
 const tooltip = document.getElementById("tooltip");
 let selectedSeatId = null;
 
+function isAdminMode() {
+  return document.body.classList.contains('admin-mode');
+}
+
 // Helper: position tooltip near mouse
 function moveTooltip(x, y) {
   tooltip.style.left = x + 5 + "px";
@@ -144,23 +148,35 @@ function initSeats() {
       tooltip.style.opacity = "0";
     });
 
-    // Click: toggle selected seat highlight
-    seat.addEventListener("click", () => {
-      if (selectedSeatId && selectedSeatId !== id) {
-        // Remove highlight from previously selected seatAdd commentMore actions
-        const prev = document.getElementById(selectedSeatId);
-        if (prev) prev.classList.remove("selected");
-      }
+seat.addEventListener("click", () => {
+  if (isAdminMode()) {
+    // Cycle status in admin mode
+    seat.classList.remove("available", "used", "reserved"); // Clear all
+    if (data.status === "available") {
+      data.status = "used";
+    } else if (data.status === "used") {
+      data.status = "reserved";
+    } else {
+      data.status = "available";
+    }
+    seat.classList.add(data.status);
+    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
+  } else {
+    // Regular select/deselect logic
+    if (selectedSeatId && selectedSeatId !== id) {
+      const prev = document.getElementById(selectedSeatId);
+      if (prev) prev.classList.remove("selected");
+    }
 
-      if (selectedSeatId === id) {
-        // Deselect seat
-        seat.classList.remove("selected");
-        selectedSeatId = null;
-      } else {
-        seat.classList.add("selected");
-        selectedSeatId = id;
-      }
-    });
+    if (selectedSeatId === id) {
+      seat.classList.remove("selected");
+      selectedSeatId = null;
+    } else {
+      seat.classList.add("selected");
+      selectedSeatId = id;
+    }
+  }
+});
   });
 }
 // Toggle Admin/User Mode
@@ -179,33 +195,59 @@ document.addEventListener("DOMContentLoaded", () => {
 // Run init after DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   const svg = document.getElementById("floorplan-svg");
+if (svg && svg.contentDocument) {
+  svg.addEventListener("load", () => {
+    const svgDoc = svg.contentDocument;
 
-  if (svg && svg.contentDocument) {
-    svg.addEventListener("load", () => {
-      const svgDoc = svg.contentDocument;
+    Object.entries(seatData).forEach(([id, data]) => {
+      const seat = svgDoc.getElementById(id);
+      if (!seat) return;
 
-      Object.entries(seatData).forEach(([id, data]) => {
-        const seat = svgDoc.getElementById(id);
-        if (seat) {
+      seat.classList.add("seat", data.status);
+      seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+
+      const seatNumber = id.replace("seat-", "");
+
+      // Add label
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      const x = parseFloat(seat.getAttribute("x"));
+      const y = parseFloat(seat.getAttribute("y"));
+      text.textContent = seatNumber;
+      text.setAttribute("x", x + 5);
+      text.setAttribute("y", y + 12);
+      text.setAttribute("class", "seat-label");
+      svgDoc.documentElement.appendChild(text);
+
+      // Click event
+      seat.addEventListener("click", () => {
+        if (isAdminMode()) {
+          seat.classList.remove("available", "used", "reserved");
+          if (data.status === "available") {
+            data.status = "used";
+          } else if (data.status === "used") {
+            data.status = "reserved";
+          } else {
+            data.status = "available";
+          }
           seat.classList.add(data.status);
           seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
+        } else {
+          // User mode select
+          if (selectedSeatId && selectedSeatId !== id) {
+            const prev = svgDoc.getElementById(selectedSeatId);
+            if (prev) prev.classList.remove("selected");
+          }
 
-          // Create and add seat number label
-          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          text.textContent = id.replace("seat-", "");
-
-          const x = parseFloat(seat.getAttribute("x"));
-          const y = parseFloat(seat.getAttribute("y"));
-
-          text.setAttribute("x", x + 5);
-          text.setAttribute("y", y + 12);
-          text.setAttribute("class", "seat-label");
-
-          svgDoc.documentElement.appendChild(text);
+          if (selectedSeatId === id) {
+            seat.classList.remove("selected");
+            selectedSeatId = null;
+          } else {
+            seat.classList.add("selected");
+            selectedSeatId = id;
+          }
         }
       });
     });
-  } else {
-    initSeats(); // for inline SVG fallback
-  }
+  });
+}
 });
