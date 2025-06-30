@@ -100,7 +100,6 @@ const seatData = {
 
   // add more seats here...
 };
-};
 
 const tooltip = document.getElementById("tooltip");
 let selectedSeatId = null;
@@ -198,13 +197,13 @@ document.addEventListener("DOMContentLoaded", () => {
     svg.addEventListener("load", () => {
       const svgDoc = svg.contentDocument;
       const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-      style.textContent = \`
+      style.textContent = `
         .used { fill: #ff4d4f; }
         .available { fill: #4caf50; }
         .reserved { fill: #ffcc00; }
         .selected { stroke: #0000ff; stroke-width: 2; }
         .seat-label { font-size: 10px; fill: black; pointer-events: none; }
-      \`;
+      `;
       svgDoc.documentElement.appendChild(style);
 
       Object.entries(seatData).forEach(([id, data]) => {
@@ -212,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!seat) return;
 
         seat.classList.add("seat", data.status);
-        seat.setAttribute("title", \`\${data.name}\${data.title ? " – " + data.title : ""}\`);
+        seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
 
         const seatNumber = id.replace("seat-", "");
 
@@ -236,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
               data.status = "available";
             }
             seat.classList.add(data.status);
-            seat.setAttribute("title", \`\${data.name}\${data.title ? " – " + data.title : ""}\`);
+            seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
           } else {
             if (selectedSeatId && selectedSeatId !== id) {
               const prev = svgDoc.getElementById(selectedSeatId);
@@ -252,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             document.getElementById("seat-info").textContent = selectedSeatId
-              ? \`Selected: \${seatData[id].name} \${seatData[id].title ? \`(\${seatData[id].title})\` : ''}\`
+              ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
               : "";
           }
         });
@@ -262,4 +261,3 @@ document.addEventListener("DOMContentLoaded", () => {
     initSeats();
   }
 });
-""")
