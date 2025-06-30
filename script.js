@@ -111,8 +111,8 @@ function isAdminMode() {
 
 function moveTooltip(x, y) {
   const rect = container.getBoundingClientRect();
-  tooltip.style.left = x - rect.left + 5 + "px";
-  tooltip.style.top = y - rect.top + 5 + "px";
+  tooltip.style.left = x - rect.left + 1 + "px";
+  tooltip.style.top = y - rect.top + 1 + "px";
 }
 
 function initSeats() {
