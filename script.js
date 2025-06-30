@@ -138,7 +138,7 @@ function initSeats() {
       tooltip.style.opacity = "0";
     });
 
-    seat.addEventListener("click", () => {
+    seat.addEventListener("click", (e) => {
       if (isAdminMode()) {
         seat.classList.remove("available", "used", "reserved");
         if (data.status === "available") {
@@ -167,6 +167,9 @@ function initSeats() {
         document.getElementById("seat-info").textContent = selectedSeatId
           ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
           : "";
+        tooltip.textContent = seat.dataset.tooltip;
+        tooltip.style.opacity = "1";
+        moveTooltip(e.pageX, e.pageY);
       }
     });
   });
@@ -224,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         text.setAttribute("class", "seat-label");
         svgDoc.documentElement.appendChild(text);
 
-        seat.addEventListener("click", () => {
+        seat.addEventListener("click", (e) => {
           if (isAdminMode()) {
             seat.classList.remove("available", "used", "reserved");
             if (data.status === "available") {
@@ -253,6 +256,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("seat-info").textContent = selectedSeatId
               ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
               : "";
+           tooltip.textContent = seat.dataset.tooltip;
+           tooltip.style.opacity = "1";
+           moveTooltip(e.pageX, e.pageY);
           }
         });
       });
