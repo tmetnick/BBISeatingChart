@@ -102,6 +102,7 @@ const seatData = {
 };
 
 const tooltip = document.getElementById("tooltip");
+const container = document.getElementById("chart-container");
 let selectedSeatId = null;
 
 function isAdminMode() {
@@ -109,8 +110,9 @@ function isAdminMode() {
 }
 
 function moveTooltip(x, y) {
-  tooltip.style.left = x + 5 + "px";
-  tooltip.style.top = y + 5 + "px";
+  const rect = container.getBoundingClientRect();
+  tooltip.style.left = x - rect.left + 5 + "px";
+  tooltip.style.top = y - rect.top + 5 + "px";
 }
 
 function initSeats() {
@@ -127,11 +129,11 @@ function initSeats() {
     seat.addEventListener("mouseenter", (e) => {
       tooltip.textContent = seat.dataset.tooltip;
       tooltip.style.opacity = "1";
-      moveTooltip(e.pageX, e.pageY);
+      moveTooltip(e.clientX, e.clientY);
     });
 
     seat.addEventListener("mousemove", (e) => {
-      moveTooltip(e.pageX, e.pageY);
+      moveTooltip(e.clientX, e.clientY);
     });
 
     seat.addEventListener("mouseleave", () => {
@@ -169,7 +171,7 @@ function initSeats() {
           : "";
         tooltip.textContent = seat.dataset.tooltip;
         tooltip.style.opacity = "1";
-        moveTooltip(e.pageX, e.pageY);
+        moveTooltip(e.clientX, e.clientY);
       }
     });
   });
@@ -259,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
               : "";
            tooltip.textContent = seat.dataset.tooltip;
            tooltip.style.opacity = "1";
-           moveTooltip(e.pageX, e.pageY);
+           moveTooltip(e.clientX, e.clientY);
           }
         });
       });
