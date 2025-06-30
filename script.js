@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
 
         const seatNumber = id.replace("seat-", "");
+        seat.dataset.tooltip = 'Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}';
 
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const x = parseFloat(seat.getAttribute("x"));
