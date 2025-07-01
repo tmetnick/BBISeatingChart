@@ -2,7 +2,7 @@ const seatData = {
   "seat-1": { name: "Available", title: "", status: "available" },
   "seat-2": { name: "Available", title: "", status: "available" },
   "seat-3": { name: "Available", title: "", status: "available" },
-  "seat-42": { name: "Available", title: "", status: "available" },
+  "seat-4": { name: "Available", title: "", status: "available" },
   "seat-5": { name: "Available", title: "", status: "available" },
   "seat-6": { name: "Daniel Morrison", title: "", status: "used" },
   "seat-7": { name: "Katie Hug", title: "", status: "used" },
