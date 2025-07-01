@@ -152,6 +152,8 @@ const seatData = {
   // add more seats here...
 };
 
+const ADMIN_PASSWORD = 'BBI-2468!';
+
 const tooltip = document.getElementById("tooltip");
 const container = document.getElementById("chart-container");
 let selectedSeatId = null;
@@ -254,8 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-mode");
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
-      document.body.classList.toggle("admin-mode");
-      toggleBtn.textContent = document.body.classList.contains("admin-mode")
+       if (!isAdminMode()) {
+        const pwd = prompt("Enter admin password:");
+        if (pwd === ADMIN_PASSWORD) {
+          document.body.classList.add("admin-mode");
+        } else if (pwd !== null) {
+          alert("Incorrect password.");
+        }
+      } else {
+        document.body.classList.remove("admin-mode");
+      }
+      toggleBtn.textContent = isAdminMode()
         ? "Switch to User Mode"
         : "Switch to Admin Mode";
     });
