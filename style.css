@@ -138,3 +138,8 @@ body.admin-mode #admin-editor {
   display: block;
 }
 
+/* Ensure editor remains hidden when the .hidden class is applied */
+body.admin-mode #admin-editor.hidden {
+  display: none;
+}
+
