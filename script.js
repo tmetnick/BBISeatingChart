@@ -161,6 +161,24 @@ const nameInput = document.getElementById("editor-name");
 const titleInput = document.getElementById("editor-title");
 const saveButton = document.getElementById("save-seat");
 
+saveButton.addEventListener("click", () => {
+  if (!selectedSeatId) return;
+  const floorplan = document.getElementById("floorplan-svg");
+  let seat = document.getElementById(selectedSeatId);
+  if (!seat && floorplan && floorplan.contentDocument) {
+    seat = floorplan.contentDocument.getElementById(selectedSeatId);
+  }
+  if (!seat) return;
+  const details = seatData[selectedSeatId];
+  details.name = nameInput.value;
+  details.title = titleInput.value;
+  seat.dataset.tooltip =
+    `Seat ${selectedSeatId.replace("seat-", "")}: ${details.name}${details.title ? " - " + details.title : ""}`;
+  tooltip.textContent = seat.dataset.tooltip;
+  editor.classList.add("hidden");
+  localStorage.setItem("seatData", JSON.stringify(seatData));
+});
+
 function isAdminMode() {
   return document.body.classList.contains('admin-mode');
 }
@@ -283,18 +301,6 @@ if (stored) {
         text.setAttribute("y", y + 12);
         text.setAttribute("class", "seat-label");
         svgDoc.documentElement.appendChild(text);
-
-        saveButton.addEventListener("click", () => {
-  if (!selectedSeatId) return;
-  const seat = document.getElementById(selectedSeatId);
-  const details = seatData[selectedSeatId];
-  details.name = nameInput.value;
-  details.title = titleInput.value;
-  seat.dataset.tooltip =
-    `Seat ${selectedSeatId.replace("seat-","")}: ${details.name}${details.title ? " - " + details.title : ""}`;
-  editor.classList.add("hidden");
-  localStorage.setItem("seatData", JSON.stringify(seatData));
-});
 
         seat.addEventListener("click", (e) => {
             if (isAdminMode()) {
