@@ -156,6 +156,11 @@ const tooltip = document.getElementById("tooltip");
 const container = document.getElementById("chart-container");
 let selectedSeatId = null;
 
+const editor = document.getElementById("admin-editor");
+const nameInput = document.getElementById("editor-name");
+const titleInput = document.getElementById("editor-title");
+const saveButton = document.getElementById("save-seat");
+
 function isAdminMode() {
   return document.body.classList.contains('admin-mode');
 }
@@ -187,22 +192,22 @@ function initSeats() {
       moveTooltip(e.clientX, e.clientY);
     });
 
-    seat.addEventListener("mouseleave", () => {
-      tooltip.style.opacity = "0";
-    });
+   seat.addEventListener("mouseleave", () => {
+  tooltip.style.opacity = "0";
+});
 
-    seat.addEventListener("click", (e) => {
-      if (isAdminMode()) {
-        seat.classList.remove("available", "used", "reserved");
-        if (data.status === "available") {
-          data.status = "used";
-        } else if (data.status === "used") {
-          data.status = "reserved";
-        } else {
-          data.status = "available";
-        }
-        seat.classList.add(data.status);
-        seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
+seat.addEventListener("click", (e) => {
+  if (isAdminMode()) {
+    seat.classList.remove("available", "used", "reserved");
+    if (data.status === "available") {
+      data.status = "used";
+    } else if (data.status === "used") {
+      data.status = "reserved";
+    } else {
+      data.status = "available";
+    }
+    seat.classList.add(data.status);
+    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
       } else {
         if (selectedSeatId && selectedSeatId !== id) {
           const prev = document.getElementById(selectedSeatId);
@@ -246,6 +251,10 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Check the console for updated seat data.");
     });
   }
+  const stored = localStorage.getItem("seatData");
+if (stored) {
+  Object.assign(seatData, JSON.parse(stored));
+}
 
   const svg = document.getElementById("floorplan-svg");
 
@@ -280,6 +289,18 @@ document.addEventListener("DOMContentLoaded", () => {
         text.setAttribute("y", y + 12);
         text.setAttribute("class", "seat-label");
         svgDoc.documentElement.appendChild(text);
+
+        saveButton.addEventListener("click", () => {
+  if (!selectedSeatId) return;
+  const seat = document.getElementById(selectedSeatId);
+  const details = seatData[selectedSeatId];
+  details.name = nameInput.value;
+  details.title = titleInput.value;
+  seat.dataset.tooltip =
+    `Seat ${selectedSeatId.replace("seat-","")}: ${details.name}${details.title ? " - " + details.title : ""}`;
+  editor.classList.add("hidden");
+  localStorage.setItem("seatData", JSON.stringify(seatData));
+});
 
         seat.addEventListener("click", (e) => {
           if (isAdminMode()) {
