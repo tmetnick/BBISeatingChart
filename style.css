@@ -115,3 +115,26 @@ button#toggle-mode {
   width: 100%;
   margin: 10px 0;
 }
+/* Utility class to hide elements */
+.hidden {
+  display: none;
+}
+
+/* Admin editor panel */
+#admin-editor {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+/* Show editor when admin mode is enabled */
+body.admin-mode #admin-editor {
+  display: block;
+}
+
