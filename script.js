@@ -198,17 +198,11 @@ function initSeats() {
 
 seat.addEventListener("click", (e) => {
   if (isAdminMode()) {
-    seat.classList.remove("available", "used", "reserved");
-    if (data.status === "available") {
-      data.status = "used";
-    } else if (data.status === "used") {
-      data.status = "reserved";
-    } else {
-      data.status = "available";
-    }
-    seat.classList.add(data.status);
-    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
-      } else {
+     selectedSeatId = id;
+    nameInput.value = data.name;
+    titleInput.value = data.title;
+    editor.classList.remove("hidden");
+  } else {
         if (selectedSeatId && selectedSeatId !== id) {
           const prev = document.getElementById(selectedSeatId);
           if (prev) prev.classList.remove("selected");
@@ -303,18 +297,13 @@ if (stored) {
 });
 
         seat.addEventListener("click", (e) => {
-          if (isAdminMode()) {
-            seat.classList.remove("available", "used", "reserved");
-            if (data.status === "available") {
-              data.status = "used";
-            } else if (data.status === "used") {
-              data.status = "reserved";
+            if (isAdminMode()) {
+              selectedSeatId = id;
+              nameInput.value = data.name;
+              titleInput.value = data.title;
+              editor.classList.remove("hidden");
             } else {
-              data.status = "available";
-            }
-            seat.classList.add(data.status);
-            seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
-          } else {
+             
             if (selectedSeatId && selectedSeatId !== id) {
               const prev = svgDoc.getElementById(selectedSeatId);
               if (prev) prev.classList.remove("selected");
