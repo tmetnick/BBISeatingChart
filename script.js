@@ -159,6 +159,7 @@ let selectedSeatId = null;
 const editor = document.getElementById("admin-editor");
 const nameInput = document.getElementById("editor-name");
 const titleInput = document.getElementById("editor-title");
+const statusInput = document.getElementById("editor-status");
 const saveButton = document.getElementById("save-seat");
 
 saveButton.addEventListener("click", () => {
@@ -172,6 +173,9 @@ saveButton.addEventListener("click", () => {
   const details = seatData[selectedSeatId];
   details.name = nameInput.value;
   details.title = titleInput.value;
+   details.status = statusInput.value;
+  seat.classList.remove("available", "used", "reserved");
+  seat.classList.add(details.status);
   seat.dataset.tooltip =
     `Seat ${selectedSeatId.replace("seat-", "")}: ${details.name}${details.title ? " - " + details.title : ""}`;
   tooltip.textContent = seat.dataset.tooltip;
@@ -219,6 +223,7 @@ seat.addEventListener("click", (e) => {
      selectedSeatId = id;
     nameInput.value = data.name;
     titleInput.value = data.title;
+     statusInput.value = data.status;
     editor.classList.remove("hidden");
   } else {
         if (selectedSeatId && selectedSeatId !== id) {
@@ -307,6 +312,7 @@ if (stored) {
               selectedSeatId = id;
               nameInput.value = data.name;
               titleInput.value = data.title;
+              statusInput.value = data.status;
               editor.classList.remove("hidden");
             } else {
              
