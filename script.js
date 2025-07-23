@@ -152,7 +152,7 @@ const seatData = {
   // add more seats here...
 };
 
-const ADMIN_PASSWORD = 'ColinIsTheBest';
+const ADMIN_PASSWORD = 'BBI-123';
 
 const tooltip = document.getElementById("tooltip");
 const container = document.getElementById("chart-container");
