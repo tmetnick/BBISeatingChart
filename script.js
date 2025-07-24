@@ -12,18 +12,17 @@ const titleInput = document.getElementById("editor-title");
 const statusInput = document.getElementById("editor-status");
 const saveButton = document.getElementById("save-seat");
 
-// Update seat colors
+// Update seat colors based on status
 function updateSeatColors() {
   Object.entries(seatData).forEach(([id, details]) => {
-    const seat = document.getElementById(id) ||
-      document.querySelector(`#floorplan-svg`).contentDocument?.getElementById(id);
+    const seat = document.getElementById(id);
     if (!seat) return;
     seat.classList.remove("available", "used", "reserved");
     seat.classList.add(details.status);
   });
 }
 
-// Fetch seats from backend
+// Fetch all seats from backend
 async function fetchSeats() {
   try {
     const res = await fetch(`${API_BASE}/seats`);
@@ -46,11 +45,7 @@ async function fetchSeats() {
 saveButton.addEventListener("click", async () => {
   if (!selectedSeatId) return;
 
-  const floorplan = document.getElementById("floorplan-svg");
-  let seat = document.getElementById(selectedSeatId);
-  if (!seat && floorplan && floorplan.contentDocument) {
-    seat = floorplan.contentDocument.getElementById(selectedSeatId);
-  }
+  const seat = document.getElementById(selectedSeatId);
   if (!seat) return;
 
   const details = seatData[selectedSeatId] || {};
@@ -73,7 +68,7 @@ saveButton.addEventListener("click", async () => {
       body: JSON.stringify(details)
     });
     console.log(`Seat ${selectedSeatId} saved to DB`);
-    fetchSeats(); // Auto-refresh seats after save
+    fetchSeats(); // Refresh after save
   } catch (err) {
     console.error("Error saving seat to DB:", err);
   }
@@ -91,49 +86,62 @@ function moveTooltip(x, y) {
   tooltip.style.top = y - rect.top + 1 + "px";
 }
 
-// Attach click handlers to seats
-function attachSeatEvents(seat, id, data, svgDoc = null) {
-  seat.addEventListener("mouseenter", (e) => {
-    tooltip.textContent = seat.dataset.tooltip;
-    tooltip.style.opacity = "1";
-    moveTooltip(e.clientX, e.clientY);
-  });
+// Attach listeners to seats already in DOM
+function initSeats() {
+  Object.entries(seatData).forEach(([id, data]) => {
+    const seat = document.getElementById(id);
+    if (!seat) return;
 
-  seat.addEventListener("mousemove", (e) => {
-    moveTooltip(e.clientX, e.clientY);
-  });
+    seat.classList.add("seat");
+    seat.classList.add(data.status);
 
-  seat.addEventListener("mouseleave", () => {
-    tooltip.style.opacity = "0";
-  });
+    const seatNumber = id.replace("seat-", "");
+    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
 
-  seat.addEventListener("click", (e) => {
-    console.log("Seat clicked:", id, "Admin:", isAdminMode()); // <-- logging
-    if (isAdminMode()) {
-      selectedSeatId = id;
-      nameInput.value = data.name || "";
-      titleInput.value = data.title || "";
-      statusInput.value = data.status || "available";
-      editor.classList.remove("hidden");
-    } else {
-      if (selectedSeatId && selectedSeatId !== id) {
-        const prev = svgDoc ? svgDoc.getElementById(selectedSeatId) : document.getElementById(selectedSeatId);
-        if (prev) prev.classList.remove("selected");
-      }
-      if (selectedSeatId === id) {
-        seat.classList.remove("selected");
-        selectedSeatId = null;
-      } else {
-        seat.classList.add("selected");
-        selectedSeatId = id;
-      }
-      document.getElementById("seat-info").textContent = selectedSeatId
-        ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
-        : "";
+    seat.addEventListener("mouseenter", (e) => {
       tooltip.textContent = seat.dataset.tooltip;
       tooltip.style.opacity = "1";
       moveTooltip(e.clientX, e.clientY);
-    }
+    });
+
+    seat.addEventListener("mousemove", (e) => moveTooltip(e.clientX, e.clientY));
+    seat.addEventListener("mouseleave", () => tooltip.style.opacity = "0");
+
+    seat.addEventListener("click", (e) => {
+      console.log("Seat clicked:", id, "Admin:", isAdminMode());
+      if (isAdminMode()) {
+        selectedSeatId = id;
+        nameInput.value = data.name || "";
+        titleInput.value = data.title || "";
+        statusInput.value = data.status || "available";
+
+        // Position editor near clicked seat
+        editor.style.position = "absolute";
+        editor.style.left = e.pageX + 15 + "px";
+        editor.style.top = e.pageY + 15 + "px";
+        editor.classList.remove("hidden");
+      } else {
+        if (selectedSeatId && selectedSeatId !== id) {
+          const prev = document.getElementById(selectedSeatId);
+          if (prev) prev.classList.remove("selected");
+        }
+
+        if (selectedSeatId === id) {
+          seat.classList.remove("selected");
+          selectedSeatId = null;
+        } else {
+          seat.classList.add("selected");
+          selectedSeatId = id;
+        }
+
+        document.getElementById("seat-info").textContent = selectedSeatId
+          ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
+          : "";
+        tooltip.textContent = seat.dataset.tooltip;
+        tooltip.style.opacity = "1";
+        moveTooltip(e.clientX, e.clientY);
+      }
+    });
   });
 }
 
@@ -168,43 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const stored = localStorage.getItem("seatData");
   if (stored) Object.assign(seatData, JSON.parse(stored));
 
-  const svg = document.getElementById("floorplan-svg");
-  if (svg && svg.tagName.toLowerCase() === "object") {
-    svg.addEventListener("load", () => {
-      const svgDoc = svg.contentDocument;
-      const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-      style.textContent = `
-        .used { fill: #ff4d4f; }
-        .available { fill: #4caf50; }
-        .reserved { fill: #ffcc00; }
-        .selected { stroke: #0000ff; stroke-width: 2; }
-        .seat-label { font-size: 10px; fill: black; pointer-events: none; }
-      `;
-      svgDoc.documentElement.appendChild(style);
+  fetchSeats().then(initSeats);
 
-      Object.entries(seatData).forEach(([id, data]) => {
-        const seat = svgDoc.getElementById(id);
-        if (!seat) return;
-
-        seat.classList.add("seat", data.status);
-        seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
-        seat.dataset.tooltip = `Seat ${id.replace("seat-", "")}: ${data.name}${data.title ? " - " + data.title : ""}`;
-
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const x = parseFloat(seat.getAttribute("x"));
-        const y = parseFloat(seat.getAttribute("y"));
-        text.textContent = id.replace("seat-", "");
-        text.setAttribute("x", x + 5);
-        text.setAttribute("y", y + 12);
-        text.setAttribute("class", "seat-label");
-        svgDoc.documentElement.appendChild(text);
-
-        attachSeatEvents(seat, id, data, svgDoc);
-      });
-
-      fetchSeats(); // now fetch seats after SVG loaded
-    });
-  } else {
-    fetchSeats();
-  }
+  // Close editor when clicking outside of it
+  document.addEventListener("click", (event) => {
+    if (!editor.contains(event.target) && !event.target.closest(".seat")) {
+      editor.classList.add("hidden");
+    }
+  });
 });
