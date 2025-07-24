@@ -1,5 +1,34 @@
 let seatData = {};
 
+// --- ADD THIS FUNCTION ANYWHERE BEFORE fetchSeats() IS CALLED ---
+function updateSeatColors() {
+  Object.entries(seatData).forEach(([id, details]) => {
+    const seat =
+      document.getElementById(id) ||
+      document.querySelector(`#floorplan-svg`).contentDocument?.getElementById(id);
+    if (!seat) return;
+
+    seat.classList.remove("available", "used", "reserved");
+    seat.classList.add(details.status);
+  });
+}
+
+async function fetchSeats() {
+  const res = await fetch(`${API_BASE}/seats`);
+  const data = await res.json();
+  seatData = {};
+  data.forEach(seat => {
+    seatData[seat.seatId] = {
+      name: seat.name,
+      title: seat.title,
+      status: seat.status
+    };
+  });
+
+  // Now this will work because we defined it
+  updateSeatColors();
+}
+
 async function fetchSeats() {
   const res = await fetch('https://bbi-seating-map-backend.onrender.com');
   const data = await res.json();
