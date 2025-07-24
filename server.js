@@ -2,47 +2,62 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// --- Allow CORS only from your GitHub Pages site ---
+app.use(cors({
+  origin: 'https://tmetnick.github.io'
+}));
+
 app.use(bodyParser.json());
 
-// Connect to MongoDB (replace with your connection string from Atlas)
-mongoose.connect(
-  'mongodb+srv://seatAdmin:SeatPass123@cluster0.fjfd4s3.mongodb.net/seatDB?retryWrites=true&w=majority&appName=Cluster0',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+// --- Connect to MongoDB using environment variable ---
+const mongoUri = process.env.MONGO_URI || 'mongodb+srv://seatAdmin:SeatPass123@cluster0.fjfd4s3.mongodb.net/seatDB?retryWrites=true&w=majority';
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Define schema and model
+// --- Define schema and model ---
 const seatSchema = new mongoose.Schema({
-  seatId: String,
+  seatId: { type: String, required: true, unique: true },
   name: String,
   title: String,
-  status: String
+  status: { type: String, enum: ['available', 'used', 'reserved'], default: 'available' }
 });
 const Seat = mongoose.model('Seat', seatSchema);
 
-// Fetch all seats
+// --- Fetch all seats ---
 app.get('/seats', async (req, res) => {
-  const seats = await Seat.find();
-  res.json(seats);
+  try {
+    const seats = await Seat.find();
+    res.json(seats);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch seats' });
+  }
 });
 
-// Update one seat
+// --- Update or create one seat ---
 app.put('/seats/:seatId', async (req, res) => {
-  const { seatId } = req.params;
-  const { name, title, status } = req.body;
+  try {
+    const { seatId } = req.params;
+    const { name, title, status } = req.body;
 
-  const seat = await Seat.findOneAndUpdate(
-    { seatId },
-    { name, title, status },
-    { new: true, upsert: true }
-  );
-  res.json(seat);
+    const seat = await Seat.findOneAndUpdate(
+      { seatId },
+      { name, title, status },
+      { new: true, upsert: true }
+    );
+    res.json(seat);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update seat' });
+  }
 });
 
-const PORT = 3000;
+// --- Server Listen ---
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
