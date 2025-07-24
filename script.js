@@ -1,6 +1,5 @@
 let seatData = {};
 
-// --- ADD THIS FUNCTION ANYWHERE BEFORE fetchSeats() IS CALLED ---
 function updateSeatColors() {
   Object.entries(seatData).forEach(([id, details]) => {
     const seat =
@@ -14,23 +13,7 @@ function updateSeatColors() {
 }
 
 async function fetchSeats() {
-  const res = await fetch(`${API_BASE}/seats`);
-  const data = await res.json();
-  seatData = {};
-  data.forEach(seat => {
-    seatData[seat.seatId] = {
-      name: seat.name,
-      title: seat.title,
-      status: seat.status
-    };
-  });
-
-  // Now this will work because we defined it
-  updateSeatColors();
-}
-
-async function fetchSeats() {
-  const res = await fetch('https://bbi-seating-map-backend.onrender.com');
+  const res = await fetch('https://bbi-seating-map-backend.onrender.com/seats');
   const data = await res.json();
   seatData = {};
   data.forEach(seat => {
@@ -67,16 +50,13 @@ saveButton.addEventListener("click", async () => {
   }
   if (!seat) return;
 
-  // Handle new or existing seat
   const details = seatData[selectedSeatId] || {};
   details.name = nameInput.value;
   details.title = titleInput.value;
   details.status = statusInput.value;
 
-  // Save locally
   seatData[selectedSeatId] = details;
 
-  // Update SVG styles
   seat.classList.remove("available", "used", "reserved");
   seat.classList.add(details.status);
   seat.dataset.tooltip =
@@ -84,9 +64,8 @@ saveButton.addEventListener("click", async () => {
   tooltip.textContent = seat.dataset.tooltip;
   editor.classList.add("hidden");
 
-  // --- Save to backend (creates or updates in MongoDB) ---
   try {
-    const res = await fetch(`https://bbi-seating-map-backend.onrender.com${selectedSeatId}`, {
+    const res = await fetch(`https://bbi-seating-map-backend.onrender.com/seats/${selectedSeatId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -101,7 +80,6 @@ saveButton.addEventListener("click", async () => {
     console.error("Error saving seat to DB:", err);
   }
 
-  // Keep localStorage for fallback
   localStorage.setItem("seatData", JSON.stringify(seatData));
 });
 
