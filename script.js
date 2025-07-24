@@ -1,32 +1,5 @@
 let seatData = {};
-
-function updateSeatColors() {
-  Object.entries(seatData).forEach(([id, details]) => {
-    const seat =
-      document.getElementById(id) ||
-      document.querySelector(`#floorplan-svg`).contentDocument?.getElementById(id);
-    if (!seat) return;
-
-    seat.classList.remove("available", "used", "reserved");
-    seat.classList.add(details.status);
-  });
-}
-
-async function fetchSeats() {
-  const res = await fetch('https://bbi-seating-map-backend.onrender.com/seat');
-  const data = await res.json();
-  seatData = {};
-  data.forEach(seat => {
-    seatData[seat.seatId] = {
-      name: seat.name,
-      title: seat.title,
-      status: seat.status
-    };
-  });
-  updateSeatColors();
-}
-fetchSeats();
-
+const API_BASE = 'https://bbi-seating-map-backend.onrender.com';
 const ADMIN_PASSWORD = 'BBI-123';
 
 const tooltip = document.getElementById("tooltip");
@@ -39,7 +12,38 @@ const titleInput = document.getElementById("editor-title");
 const statusInput = document.getElementById("editor-status");
 const saveButton = document.getElementById("save-seat");
 
-// --- UPDATED SAVE LOGIC ---
+// Update seat colors
+function updateSeatColors() {
+  Object.entries(seatData).forEach(([id, details]) => {
+    const seat = document.getElementById(id) ||
+      document.querySelector(`#floorplan-svg`).contentDocument?.getElementById(id);
+    if (!seat) return;
+    seat.classList.remove("available", "used", "reserved");
+    seat.classList.add(details.status);
+  });
+}
+
+// Fetch seats from backend
+async function fetchSeats() {
+  try {
+    const res = await fetch(`${API_BASE}/seats`);
+    const data = await res.json();
+    seatData = {};
+    data.forEach(seat => {
+      seatData[seat.seatId] = {
+        name: seat.name,
+        title: seat.title,
+        status: seat.status
+      };
+    });
+    updateSeatColors();
+  } catch (err) {
+    console.error("Error fetching seats:", err);
+  }
+}
+fetchSeats();
+
+// Save seat changes
 saveButton.addEventListener("click", async () => {
   if (!selectedSeatId) return;
 
@@ -54,7 +58,6 @@ saveButton.addEventListener("click", async () => {
   details.name = nameInput.value;
   details.title = titleInput.value;
   details.status = statusInput.value;
-
   seatData[selectedSeatId] = details;
 
   seat.classList.remove("available", "used", "reserved");
@@ -65,17 +68,14 @@ saveButton.addEventListener("click", async () => {
   editor.classList.add("hidden");
 
   try {
-    const res = await fetch(`https://bbi-seating-map-backend.onrender.com/seats/${selectedSeatId}`, {
+    await fetch(`${API_BASE}/seats/${selectedSeatId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: details.name,
-        title: details.title,
-        status: details.status
-      })
+      body: JSON.stringify(details)
     });
-    const data = await res.json();
-    console.log(`Seat ${selectedSeatId} saved to DB`, data);
+    console.log(`Seat ${selectedSeatId} saved to DB`);
+    // Auto-refresh seats after save
+    fetchSeats();
   } catch (err) {
     console.error("Error saving seat to DB:", err);
   }
@@ -97,7 +97,6 @@ function initSeats() {
   Object.entries(seatData).forEach(([id, data]) => {
     const seat = document.getElementById(id);
     if (!seat) return;
-
     seat.classList.add("seat");
     seat.classList.add(data.status);
 
@@ -179,12 +178,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const stored = localStorage.getItem("seatData");
-  if (stored) {
-    Object.assign(seatData, JSON.parse(stored));
-  }
+  if (stored) Object.assign(seatData, JSON.parse(stored));
 
   const svg = document.getElementById("floorplan-svg");
-
   if (svg && svg.tagName.toLowerCase() === "object") {
     svg.addEventListener("load", () => {
       const svgDoc = svg.contentDocument;
@@ -201,17 +197,14 @@ document.addEventListener("DOMContentLoaded", () => {
       Object.entries(seatData).forEach(([id, data]) => {
         const seat = svgDoc.getElementById(id);
         if (!seat) return;
-
         seat.classList.add("seat", data.status);
         seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
-
-        const seatNumber = id.replace("seat-", "");
-        seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
+        seat.dataset.tooltip = `Seat ${id.replace("seat-", "")}: ${data.name}${data.title ? " - " + data.title : ""}`;
 
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const x = parseFloat(seat.getAttribute("x"));
         const y = parseFloat(seat.getAttribute("y"));
-        text.textContent = seatNumber;
+        text.textContent = id.replace("seat-", "");
         text.setAttribute("x", x + 5);
         text.setAttribute("y", y + 12);
         text.setAttribute("class", "seat-label");
@@ -229,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
               const prev = svgDoc.getElementById(selectedSeatId);
               if (prev) prev.classList.remove("selected");
             }
-
             if (selectedSeatId === id) {
               seat.classList.remove("selected");
               selectedSeatId = null;
@@ -237,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
               seat.classList.add("selected");
               selectedSeatId = id;
             }
-
             document.getElementById("seat-info").textContent = selectedSeatId
               ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
               : "";
