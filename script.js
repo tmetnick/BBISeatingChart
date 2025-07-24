@@ -41,7 +41,6 @@ async function fetchSeats() {
     console.error("Error fetching seats:", err);
   }
 }
-fetchSeats();
 
 // Save seat changes
 saveButton.addEventListener("click", async () => {
@@ -74,8 +73,7 @@ saveButton.addEventListener("click", async () => {
       body: JSON.stringify(details)
     });
     console.log(`Seat ${selectedSeatId} saved to DB`);
-    // Auto-refresh seats after save
-    fetchSeats();
+    fetchSeats(); // Auto-refresh seats after save
   } catch (err) {
     console.error("Error saving seat to DB:", err);
   }
@@ -93,59 +91,49 @@ function moveTooltip(x, y) {
   tooltip.style.top = y - rect.top + 1 + "px";
 }
 
-function initSeats() {
-  Object.entries(seatData).forEach(([id, data]) => {
-    const seat = document.getElementById(id);
-    if (!seat) return;
-    seat.classList.add("seat");
-    seat.classList.add(data.status);
+// Attach click handlers to seats
+function attachSeatEvents(seat, id, data, svgDoc = null) {
+  seat.addEventListener("mouseenter", (e) => {
+    tooltip.textContent = seat.dataset.tooltip;
+    tooltip.style.opacity = "1";
+    moveTooltip(e.clientX, e.clientY);
+  });
 
-    const seatNumber = id.replace("seat-", "");
-    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
+  seat.addEventListener("mousemove", (e) => {
+    moveTooltip(e.clientX, e.clientY);
+  });
 
-    seat.addEventListener("mouseenter", (e) => {
+  seat.addEventListener("mouseleave", () => {
+    tooltip.style.opacity = "0";
+  });
+
+  seat.addEventListener("click", (e) => {
+    console.log("Seat clicked:", id, "Admin:", isAdminMode()); // <-- logging
+    if (isAdminMode()) {
+      selectedSeatId = id;
+      nameInput.value = data.name || "";
+      titleInput.value = data.title || "";
+      statusInput.value = data.status || "available";
+      editor.classList.remove("hidden");
+    } else {
+      if (selectedSeatId && selectedSeatId !== id) {
+        const prev = svgDoc ? svgDoc.getElementById(selectedSeatId) : document.getElementById(selectedSeatId);
+        if (prev) prev.classList.remove("selected");
+      }
+      if (selectedSeatId === id) {
+        seat.classList.remove("selected");
+        selectedSeatId = null;
+      } else {
+        seat.classList.add("selected");
+        selectedSeatId = id;
+      }
+      document.getElementById("seat-info").textContent = selectedSeatId
+        ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
+        : "";
       tooltip.textContent = seat.dataset.tooltip;
       tooltip.style.opacity = "1";
       moveTooltip(e.clientX, e.clientY);
-    });
-
-    seat.addEventListener("mousemove", (e) => {
-      moveTooltip(e.clientX, e.clientY);
-    });
-
-    seat.addEventListener("mouseleave", () => {
-      tooltip.style.opacity = "0";
-    });
-
-    seat.addEventListener("click", (e) => {
-      if (isAdminMode()) {
-        selectedSeatId = id;
-        nameInput.value = data.name || "";
-        titleInput.value = data.title || "";
-        statusInput.value = data.status || "available";
-        editor.classList.remove("hidden");
-      } else {
-        if (selectedSeatId && selectedSeatId !== id) {
-          const prev = document.getElementById(selectedSeatId);
-          if (prev) prev.classList.remove("selected");
-        }
-
-        if (selectedSeatId === id) {
-          seat.classList.remove("selected");
-          selectedSeatId = null;
-        } else {
-          seat.classList.add("selected");
-          selectedSeatId = id;
-        }
-
-        document.getElementById("seat-info").textContent = selectedSeatId
-          ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
-          : "";
-        tooltip.textContent = seat.dataset.tooltip;
-        tooltip.style.opacity = "1";
-        moveTooltip(e.clientX, e.clientY);
-      }
-    });
+    }
   });
 }
 
@@ -197,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Object.entries(seatData).forEach(([id, data]) => {
         const seat = svgDoc.getElementById(id);
         if (!seat) return;
+
         seat.classList.add("seat", data.status);
         seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
         seat.dataset.tooltip = `Seat ${id.replace("seat-", "")}: ${data.name}${data.title ? " - " + data.title : ""}`;
@@ -210,36 +199,12 @@ document.addEventListener("DOMContentLoaded", () => {
         text.setAttribute("class", "seat-label");
         svgDoc.documentElement.appendChild(text);
 
-        seat.addEventListener("click", (e) => {
-          if (isAdminMode()) {
-            selectedSeatId = id;
-            nameInput.value = data.name || "";
-            titleInput.value = data.title || "";
-            statusInput.value = data.status || "available";
-            editor.classList.remove("hidden");
-          } else {
-            if (selectedSeatId && selectedSeatId !== id) {
-              const prev = svgDoc.getElementById(selectedSeatId);
-              if (prev) prev.classList.remove("selected");
-            }
-            if (selectedSeatId === id) {
-              seat.classList.remove("selected");
-              selectedSeatId = null;
-            } else {
-              seat.classList.add("selected");
-              selectedSeatId = id;
-            }
-            document.getElementById("seat-info").textContent = selectedSeatId
-              ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
-              : "";
-            tooltip.textContent = seat.dataset.tooltip;
-            tooltip.style.opacity = "1";
-            moveTooltip(e.clientX, e.clientY);
-          }
-        });
+        attachSeatEvents(seat, id, data, svgDoc);
       });
+
+      fetchSeats(); // now fetch seats after SVG loaded
     });
   } else {
-    initSeats();
+    fetchSeats();
   }
 });
