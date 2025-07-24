@@ -1,7 +1,7 @@
 let seatData = {};
 
 async function fetchSeats() {
-  const res = await fetch('http://localhost:3000/seats');
+  const res = await fetch('https://bbi-seating-map-backend.onrender.com');
   const data = await res.json();
   seatData = {};
   data.forEach(seat => {
@@ -57,7 +57,7 @@ saveButton.addEventListener("click", async () => {
 
   // --- Save to backend (creates or updates in MongoDB) ---
   try {
-    const res = await fetch(`http://localhost:3000/seats/${selectedSeatId}`, {
+    const res = await fetch(`https://bbi-seating-map-backend.onrender.com${selectedSeatId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
