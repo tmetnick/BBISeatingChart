@@ -12,18 +12,78 @@ const titleInput = document.getElementById("editor-title");
 const statusInput = document.getElementById("editor-status");
 const saveButton = document.getElementById("save-seat");
 
-// Update seat colors
+// --- Update seat colors ---
 function updateSeatColors() {
   Object.entries(seatData).forEach(([id, details]) => {
-    const seat = document.getElementById(id) ||
-      document.querySelector(`#floorplan-svg`).contentDocument?.getElementById(id);
+    const seat = document.getElementById(id);
     if (!seat) return;
     seat.classList.remove("available", "used", "reserved");
     seat.classList.add(details.status);
   });
 }
 
-// Fetch seats from backend
+// --- Initialize seat click events ---
+function initSeats() {
+  console.log("initSeats called with", Object.keys(seatData).length, "seats");
+  Object.entries(seatData).forEach(([id, data]) => {
+    const seat = document.getElementById(id);
+    if (!seat) return;
+
+    // Remove any previous listeners before adding a new one
+    seat.replaceWith(seat.cloneNode(true));
+    const freshSeat = document.getElementById(id);
+
+    freshSeat.addEventListener("mouseenter", (e) => {
+      tooltip.textContent = `Seat ${id.replace("seat-", "")}: ${data.name}${data.title ? " - " + data.title : ""}`;
+      tooltip.style.opacity = "1";
+      moveTooltip(e.clientX, e.clientY);
+    });
+
+    freshSeat.addEventListener("mousemove", (e) => {
+      moveTooltip(e.clientX, e.clientY);
+    });
+
+    freshSeat.addEventListener("mouseleave", () => {
+      tooltip.style.opacity = "0";
+    });
+
+    freshSeat.addEventListener("click", (e) => {
+      console.log("Seat clicked:", id, "Admin mode?", isAdminMode());
+      if (isAdminMode()) {
+        selectedSeatId = id;
+        nameInput.value = data.name || "";
+        titleInput.value = data.title || "";
+        statusInput.value = data.status || "available";
+
+        // Position editor near clicked seat
+        const seatRect = freshSeat.getBoundingClientRect();
+        editor.style.left = `${seatRect.x + seatRect.width + 10}px`;
+        editor.style.top = `${seatRect.y}px`;
+        editor.classList.remove("hidden");
+      } else {
+        if (selectedSeatId && selectedSeatId !== id) {
+          const prev = document.getElementById(selectedSeatId);
+          if (prev) prev.classList.remove("selected");
+        }
+        if (selectedSeatId === id) {
+          freshSeat.classList.remove("selected");
+          selectedSeatId = null;
+        } else {
+          freshSeat.classList.add("selected");
+          selectedSeatId = id;
+        }
+        document.getElementById("seat-info").textContent = selectedSeatId
+          ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
+          : "";
+        tooltip.textContent = freshSeat.dataset.tooltip;
+        tooltip.style.opacity = "1";
+        moveTooltip(e.clientX, e.clientY);
+      }
+    });
+  });
+}
+
+// --- Fetch seat data from backend ---
 async function fetchSeats() {
   try {
     const res = await fetch(`${API_BASE}/seats`);
@@ -37,35 +97,22 @@ async function fetchSeats() {
       };
     });
     updateSeatColors();
+    initSeats();
   } catch (err) {
     console.error("Error fetching seats:", err);
   }
 }
 fetchSeats();
 
-// Save seat changes
+// --- Save seat changes ---
 saveButton.addEventListener("click", async () => {
   if (!selectedSeatId) return;
-
-  const floorplan = document.getElementById("floorplan-svg");
-  let seat = document.getElementById(selectedSeatId);
-  if (!seat && floorplan && floorplan.contentDocument) {
-    seat = floorplan.contentDocument.getElementById(selectedSeatId);
-  }
-  if (!seat) return;
 
   const details = seatData[selectedSeatId] || {};
   details.name = nameInput.value;
   details.title = titleInput.value;
   details.status = statusInput.value;
   seatData[selectedSeatId] = details;
-
-  seat.classList.remove("available", "used", "reserved");
-  seat.classList.add(details.status);
-  seat.dataset.tooltip =
-    `Seat ${selectedSeatId.replace("seat-", "")}: ${details.name}${details.title ? " - " + details.title : ""}`;
-  tooltip.textContent = seat.dataset.tooltip;
-  editor.classList.add("hidden");
 
   try {
     await fetch(`${API_BASE}/seats/${selectedSeatId}`, {
@@ -74,15 +121,16 @@ saveButton.addEventListener("click", async () => {
       body: JSON.stringify(details)
     });
     console.log(`Seat ${selectedSeatId} saved to DB`);
-    // Auto-refresh seats after save
-    fetchSeats();
+    fetchSeats(); // refresh after save
   } catch (err) {
     console.error("Error saving seat to DB:", err);
   }
 
+  editor.classList.add("hidden");
   localStorage.setItem("seatData", JSON.stringify(seatData));
 });
 
+// --- Helpers ---
 function isAdminMode() {
   return document.body.classList.contains('admin-mode');
 }
@@ -93,76 +141,7 @@ function moveTooltip(x, y) {
   tooltip.style.top = y - rect.top + 1 + "px";
 }
 
-function attachSeatClickHandler(seat, id, data) {
-  seat.addEventListener("click", (e) => {
-    console.log("Seat clicked:", id, "Admin:", isAdminMode());
-    if (isAdminMode()) {
-      selectedSeatId = id;
-      nameInput.value = data.name || "";
-      titleInput.value = data.title || "";
-      statusInput.value = data.status || "available";
-
-      // --- Smart popup position ---
-      editor.style.position = "absolute";
-      let editorWidth = editor.offsetWidth || 220;
-      let editorHeight = editor.offsetHeight || 150;
-      let x = e.pageX + 20;
-      let y = e.pageY + 20;
-
-      if (x + editorWidth > window.innerWidth) {
-        x = window.innerWidth - editorWidth - 20;
-      }
-      if (y + editorHeight > window.innerHeight) {
-        y = window.innerHeight - editorHeight - 20;
-      }
-
-      editor.style.left = x + "px";
-      editor.style.top = y + "px";
-      editor.classList.remove("hidden");
-    } else {
-      if (selectedSeatId && selectedSeatId !== id) {
-        const prev = document.getElementById(selectedSeatId);
-        if (prev) prev.classList.remove("selected");
-      }
-      if (selectedSeatId === id) {
-        seat.classList.remove("selected");
-        selectedSeatId = null;
-      } else {
-        seat.classList.add("selected");
-        selectedSeatId = id;
-      }
-      document.getElementById("seat-info").textContent = selectedSeatId
-        ? `Selected: ${seatData[id].name} ${seatData[id].title ? `(${seatData[id].title})` : ''}`
-        : "";
-      tooltip.textContent = seat.dataset.tooltip;
-      tooltip.style.opacity = "1";
-      moveTooltip(e.clientX, e.clientY);
-    }
-  });
-}
-
-function initSeats() {
-  Object.entries(seatData).forEach(([id, data]) => {
-    const seat = document.getElementById(id);
-    if (!seat) return;
-    seat.classList.add("seat");
-    seat.classList.add(data.status);
-
-    const seatNumber = id.replace("seat-", "");
-    seat.dataset.tooltip = `Seat ${seatNumber}: ${data.name}${data.title ? " - " + data.title : ""}`;
-
-    seat.addEventListener("mouseenter", (e) => {
-      tooltip.textContent = seat.dataset.tooltip;
-      tooltip.style.opacity = "1";
-      moveTooltip(e.clientX, e.clientY);
-    });
-    seat.addEventListener("mousemove", (e) => moveTooltip(e.clientX, e.clientY));
-    seat.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
-
-    attachSeatClickHandler(seat, id, data);
-  });
-}
-
+// --- Page Load Events ---
 document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-mode");
   if (toggleBtn) {
@@ -193,41 +172,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const stored = localStorage.getItem("seatData");
   if (stored) Object.assign(seatData, JSON.parse(stored));
-
-  const svg = document.getElementById("floorplan-svg");
-  if (svg && svg.tagName.toLowerCase() === "object") {
-    svg.addEventListener("load", () => {
-      const svgDoc = svg.contentDocument;
-      const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-      style.textContent = `
-        .used { fill: #ff4d4f; }
-        .available { fill: #4caf50; }
-        .reserved { fill: #ffcc00; }
-        .selected { stroke: #0000ff; stroke-width: 2; }
-        .seat-label { font-size: 10px; fill: black; pointer-events: none; }
-      `;
-      svgDoc.documentElement.appendChild(style);
-
-      Object.entries(seatData).forEach(([id, data]) => {
-        const seat = svgDoc.getElementById(id);
-        if (!seat) return;
-        seat.classList.add("seat", data.status);
-        seat.setAttribute("title", `${data.name}${data.title ? " – " + data.title : ""}`);
-        seat.dataset.tooltip = `Seat ${id.replace("seat-", "")}: ${data.name}${data.title ? " - " + data.title : ""}`;
-
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const x = parseFloat(seat.getAttribute("x"));
-        const y = parseFloat(seat.getAttribute("y"));
-        text.textContent = id.replace("seat-", "");
-        text.setAttribute("x", x + 5);
-        text.setAttribute("y", y + 12);
-        text.setAttribute("class", "seat-label");
-        svgDoc.documentElement.appendChild(text);
-
-        attachSeatClickHandler(seat, id, data);
-      });
-    });
-  } else {
-    initSeats();
-  }
 });
