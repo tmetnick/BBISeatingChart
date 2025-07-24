@@ -6,10 +6,13 @@ require('dotenv').config();
 
 const app = express();
 
-// Allow only your GitHub Pages frontend
-app.use(cors({
-  origin: 'https://tmetnick.github.io'
-}));
+// Allow only your GitHub Pages frontend + common HTTP methods
+const corsOptions = {
+  origin: 'https://tmetnick.github.io',  // your GitHub Pages site
+  methods: ['GET', 'PUT', 'POST', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+};
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 
