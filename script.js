@@ -13,7 +13,7 @@ function updateSeatColors() {
 }
 
 async function fetchSeats() {
-  const res = await fetch('https://bbi-seating-map-backend.onrender.com/seats');
+  const res = await fetch('https://bbi-seating-map-backend.onrender.com/seat');
   const data = await res.json();
   seatData = {};
   data.forEach(seat => {
