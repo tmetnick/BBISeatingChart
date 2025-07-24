@@ -143,3 +143,6 @@ body.admin-mode #admin-editor.hidden {
   display: none;
 }
 
+.hidden {
+  display: none;
+}

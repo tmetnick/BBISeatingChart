@@ -262,16 +262,16 @@
 </defs>
   </svg>
   <div id="seat-info"></div>
-<div id="admin-editor" class="hidden">
-  <label> Name: <input id="editor-name"></label>
-  <label> Title: <input id="editor-title"></label>
-  <label> Status:
+<div id="admin-editor" class="hidden" style="position: absolute; background: white; padding: 10px; border: 1px solid #ccc;">
+  <label>Name: <input type="text" id="editor-name"></label><br>
+  <label>Title: <input type="text" id="editor-title"></label><br>
+  <label>Status:
     <select id="editor-status">
-      <option value="available">available</option>
-      <option value="used">used</option>
-      <option value="reserved">reserved</option>
+      <option value="available">Available</option>
+      <option value="used">Used</option>
+      <option value="reserved">Reserved</option>
     </select>
-  </label>
+  </label><br>
   <button id="save-seat">Save</button>
 </div>
 <div id="tooltip" class="tooltip"></div>
