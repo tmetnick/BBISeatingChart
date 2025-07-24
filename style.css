@@ -146,3 +146,14 @@ body.admin-mode #admin-editor.hidden {
 .hidden {
   display: none;
 }
+
+#admin-editor {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+  width: 220px;
+  position: absolute;
+  z-index: 9999;
+}
